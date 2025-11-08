@@ -1,0 +1,2 @@
+# Oishine
+Projek PSAJ Informatika
