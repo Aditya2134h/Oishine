@@ -933,7 +933,7 @@ export default function Home() {
       {/* Debug: Show current settings */}
       {console.log('Render - Current storeSettings:', storeSettings)}
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-red-100 shadow-sm">
+      <header className="sticky top-0 z-50 bg-background/90 dark:bg-background/95 backdrop-blur-xl border-b border-border shadow-sm transition-colors">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
@@ -972,7 +972,7 @@ export default function Home() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
-                  className="text-xs lg:text-sm text-gray-600 font-medium"
+                  className="text-xs lg:text-sm text-muted-foreground font-medium"
                 >
                   おいしいね！
                 </motion.div>
@@ -995,7 +995,7 @@ export default function Home() {
                 >
                   <Link 
                     href={item.href} 
-                    className="flex items-center space-x-2 px-4 py-2 rounded-xl text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200 font-medium group"
+                    className="flex items-center space-x-2 px-4 py-2 rounded-xl text-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-all duration-200 font-medium group"
                   >
                     <item.icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
                     <span>{item.label}</span>
@@ -1016,7 +1016,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="relative hover:bg-red-50 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="relative hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
                   onClick={() => setShowOrderHistory(true)}
                 >
                   <History className="h-4 w-4" />
@@ -1032,7 +1032,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="relative hover:bg-red-50 hover:border-red-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="relative hover:bg-red-50 dark:hover:bg-red-950/50 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 shadow-sm hover:shadow-md"
                   onClick={() => setIsCartOpen(!isCartOpen)}
                 >
                   <ShoppingCart className="h-4 w-4" />
@@ -1109,8 +1109,8 @@ export default function Home() {
       <section className="relative min-h-[30vh] md:min-h-[35vh] lg:min-h-[40vh] flex items-center justify-center overflow-hidden pt-6 sm:pt-8 md:pt-10 lg:pt-12">
         {/* Animated Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-pink-50 to-purple-50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 dark:from-red-950/20 dark:via-pink-950/20 dark:to-purple-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-transparent" />
           
           {/* Floating Animated Elements */}
           <motion.div
@@ -1121,7 +1121,7 @@ export default function Home() {
               y: [0, -50, 0]
             }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-20 left-10 w-24 h-24 bg-gradient-to-br from-red-300 to-pink-300 rounded-full opacity-20 blur-3xl"
+            className="absolute top-20 left-10 w-24 h-24 bg-gradient-to-br from-red-300 to-pink-300 dark:from-red-600 dark:to-pink-600 rounded-full opacity-20 dark:opacity-10 blur-3xl"
           />
           <motion.div
             animate={{ 

@@ -273,7 +273,7 @@ model Review {
 model Wishlist {
   id        String   @id @default(cuid())
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String?
+  userId    String   // Session ID for guests, User ID for logged in users
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
   createdAt DateTime @default(now())

@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
     const sessionId = searchParams.get('sessionId')
 
-    if (!userId && !sessionId) {
+    const userIdentifier = userId || sessionId
+
+    if (!userIdentifier) {
       return NextResponse.json({
         success: false,
         error: 'User ID or Session ID required'
@@ -17,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const wishlist = await db.wishlist.findMany({
       where: {
-        userId: userId || sessionId
+        userId: userIdentifier
       },
       include: {
         product: {
@@ -50,6 +52,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userId, sessionId, productId } = body
 
+    const userIdentifier = userId || sessionId
+
     if (!productId) {
       return NextResponse.json({
         success: false,
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    if (!userId && !sessionId) {
+    if (!userIdentifier) {
       return NextResponse.json({
         success: false,
         error: 'User ID or Session ID required'
@@ -80,7 +84,7 @@ export async function POST(request: NextRequest) {
     const existing = await db.wishlist.findUnique({
       where: {
         userId_productId: {
-          userId: userId || sessionId || '',
+          userId: userIdentifier,
           productId
         }
       }
@@ -96,7 +100,7 @@ export async function POST(request: NextRequest) {
     // Add to wishlist
     const wishlistItem = await db.wishlist.create({
       data: {
-        userId: userId || sessionId,
+        userId: userIdentifier,
         productId
       },
       include: {
@@ -130,6 +134,8 @@ export async function DELETE(request: NextRequest) {
     const sessionId = searchParams.get('sessionId')
     const productId = searchParams.get('productId')
 
+    const userIdentifier = userId || sessionId
+
     if (!productId) {
       return NextResponse.json({
         success: false,
@@ -137,7 +143,7 @@ export async function DELETE(request: NextRequest) {
       }, { status: 400 })
     }
 
-    if (!userId && !sessionId) {
+    if (!userIdentifier) {
       return NextResponse.json({
         success: false,
         error: 'User ID or Session ID required'
@@ -148,7 +154,7 @@ export async function DELETE(request: NextRequest) {
     await db.wishlist.delete({
       where: {
         userId_productId: {
-          userId: userId || sessionId || '',
+          userId: userIdentifier,
           productId
         }
       }
