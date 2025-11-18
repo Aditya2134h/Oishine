@@ -1,0 +1,420 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?
+  address   String?
+  // Analytics
+  totalOrders Int     @default(0)
+  totalSpent  Int     @default(0)
+  averageRating Float? // As reviewer
+  reviewCount  Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  cartItems CartItem[]
+  reviews   Review[]
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  image       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Int
+  image       String
+  ingredients String?
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  isAvailable Boolean  @default(true)
+  // Analytics
+  totalOrders Int      @default(0)
+  totalRevenue Int     @default(0)
+  averageRating Float? // Average from reviews
+  reviewCount  Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  user              User?       @relation(fields: [userId], references: [id])
+  userId            String?
+  total             Int
+  status            OrderStatus @default(PENDING)
+  name              String
+  email             String
+  phone             String
+  address           String
+  notes             String?
+  // Pre-order fields
+  isPreOrder        Boolean     @default(false)
+  scheduledTime     DateTime?
+  deliveryType      DeliveryType @default(DELIVERY)
+  // Delivery fields
+  deliveryFee       Int         @default(0)
+  deliveryAddress   String?
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  // Tracking
+  trackingNumber    String?
+  driverId          String?
+  driver            Driver?     @relation(fields: [driverId], references: [id])
+  // Payment
+  paymentMethod     String      @default("qris")
+  paymentStatus     PaymentStatus @default(PENDING)
+  paidAt            DateTime?
+  // Timestamps
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  // Relations
+  items             OrderItem[]
+  orderVouchers     OrderVoucher[]
+  reviews           Review[]
+  routeOrders       DeliveryRouteOrder[]
+  deliveryTracking  DeliveryTracking?
+}
+
+model OrderItem {
+  id       String  @id @default(cuid())
+  order    Order   @relation(fields: [orderId], references: [id])
+  orderId  String
+  product  Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity Int
+  price    Int
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  DELIVERING
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryType {
+  DELIVERY
+  PICKUP
+  DINE_IN
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Voucher {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  description     String?
+  type            VoucherType
+  value           Int
+  minOrderAmount  Int?
+  maxDiscountAmount Int?
+  usageLimit      Int?
+  usageCount      Int      @default(0)
+  userLimit       Int?     // Limit per user
+  isActive        Boolean  @default(true)
+  validFrom       DateTime
+  validTo         DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  orderVouchers   OrderVoucher[]
+}
+
+model OrderVoucher {
+  id        String   @id @default(cuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  voucher   Voucher  @relation(fields: [voucherId], references: [id])
+  voucherId String
+  discountAmount Int
+  createdAt DateTime @default(now())
+}
+
+enum VoucherType {
+  PERCENTAGE
+  FIXED
+}
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  image       String
+  bio         String
+  email       String?
+  instagram   String?
+  twitter     String?
+  linkedin    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StoreSettings {
+  id                String   @id @default(cuid())
+  storeName         String   @default("Oishine!")
+  storeEmail        String   @default("admin@oishine.com")
+  storePhone        String   @default("+62 812-3456-7890")
+  storeAddress      String   @default("Jakarta, Indonesia")
+  storeDescription  String   @default("Delicious Japanese Food Delivery")
+  currency          String   @default("IDR")
+  taxRate           Float    @default(10)
+  // Contact Information
+  contactEmail      String   @default("info@oishine.com")
+  contactPhone      String   @default("+62 21 1234 5678")
+  contactAddress    String   @default("Jl. Sudirman No. 123, Jakarta Pusat")
+  // Opening Hours
+  weekdayHours      String   @default("10:00 - 22:00")
+  weekendHours      String   @default("10:00 - 23:00")
+  holidayHours      String   @default("10:00 - 23:00")
+  // Pre-order settings
+  maxPreOrderDays   Int      @default(7)
+  minPreOrderHours  Int      @default(2)
+  // Delivery settings
+  baseDeliveryFee   Int      @default(10000)
+  freeDeliveryMin   Int      @default(50000)
+  // Public social links for the store
+  instagram         String?  @default("")
+  facebook          String?  @default("")
+  twitter           String?  @default("")
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+}
+
+// Review & Rating System
+model Review {
+  id          String     @id @default(cuid())
+  order       Order      @relation(fields: [orderId], references: [id])
+  orderId     String
+  user        User?      @relation(fields: [userId], references: [id])
+  userId      String?
+  product     Product    @relation(fields: [productId], references: [id])
+  productId   String
+  rating      Int        // 1-5 stars
+  comment     String?
+  images      String?    // JSON string array of image URLs
+  isVerified  Boolean    @default(true)
+  helpful     Int        @default(0) // Helpful votes
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+// Driver Management
+model Driver {
+  id              String         @id @default(cuid())
+  name            String
+  phone           String
+  email           String?
+  licenseNumber   String
+  vehicleType     String         // Motorcycle, Car, etc.
+  vehicleNumber   String
+  status          DriverStatus   @default(AVAILABLE)
+  currentLocation String?        // JSON: {lat, lng}
+  totalOrders     Int            @default(0)
+  rating          Float?         // Average rating
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  orders          Order[]
+  deliveryRoutes  DeliveryRoute[]
+  deliveryTrackings DeliveryTracking[]
+}
+
+enum DriverStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+  ON_BREAK
+}
+
+// Delivery Zones
+model DeliveryZone {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  area        String   // JSON: Polygon coordinates
+  deliveryFee Int
+  estimatedTime Int    // in minutes
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Sales Analytics
+model SalesAnalytics {
+  id            String   @id @default(cuid())
+  date          DateTime
+  totalOrders   Int      @default(0)
+  totalRevenue  Int      @default(0)
+  totalProfit   Int      @default(0)
+  avgOrderValue Float    @default(0)
+  // Analytics data
+  productSales  String?  // JSON: Product sales data
+  categorySales String?  // JSON: Category sales data
+  hourlySales   String?  // JSON: Hourly sales data
+  paymentMethods String? // JSON: Payment method breakdown
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Route Optimization
+model DeliveryRoute {
+  id              String   @id @default(cuid())
+  driverId        String
+  driver          Driver   @relation(fields: [driverId], references: [id])
+  date            DateTime
+  startTime       DateTime?
+  endTime         DateTime?
+  status          RouteStatus @default(PLANNED)
+  totalDistance   Float?   // in kilometers
+  estimatedTime   Int?     // in minutes
+  actualTime      Int?     // in minutes
+  fuelCost        Int?     // in IDR
+  optimizationScore Float? // 0-100 score
+  // Route data
+  waypoints       String?  // JSON: Array of route points
+  optimizedPath   String?  // JSON: Optimized route path
+  trafficData     String?  // JSON: Traffic information
+  weatherData     String?  // JSON: Weather conditions
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  routeOrders     DeliveryRouteOrder[]
+  deliveryTrackings DeliveryTracking[]
+}
+
+model DeliveryRouteOrder {
+  id       String @id @default(cuid())
+  routeId  String
+  route    DeliveryRoute @relation(fields: [routeId], references: [id])
+  orderId  String
+  order    Order @relation(fields: [orderId], references: [id])
+  sequence Int    // Order in the route
+  status   RouteOrderStatus @default(PENDING)
+  estimatedArrival DateTime?
+  actualArrival    DateTime?
+  notes    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum RouteStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RouteOrderStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+}
+
+// Delivery Tracking
+model DeliveryTracking {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  order           Order    @relation(fields: [orderId], references: [id])
+  driverId        String?
+  driver          Driver?  @relation(fields: [driverId], references: [id])
+  routeId         String?
+  route           DeliveryRoute? @relation(fields: [routeId], references: [id])
+  // Location tracking
+  currentLat      Float?
+  currentLng      Float?
+  lastUpdate      DateTime @default(now())
+  // ETA calculations
+  estimatedArrival DateTime?
+  actualArrival    DateTime?
+  // Tracking metadata
+  trackingUrl     String?  // Customer-facing tracking URL
+  shareCode       String?  @unique // Simple code for customer access
+  notifications   String?  // JSON: Notification history
+  // Status timeline
+  statusHistory   String?  // JSON: Status change history
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  locationUpdates LocationUpdate[]
+}
+
+model LocationUpdate {
+  id          String   @id @default(cuid())
+  trackingId  String
+  tracking    DeliveryTracking @relation(fields: [trackingId], references: [id])
+  latitude    Float
+  longitude   Float
+  accuracy    Float?   // GPS accuracy in meters
+  speed       Float?   // Speed in km/h
+  heading     Float?   // Direction in degrees
+  timestamp   DateTime @default(now())
+  // Additional data
+  address     String?  // Reverse geocoded address
+  batteryLevel Int?    // Driver's phone battery level
+  notes       String?
+  createdAt   DateTime @default(now())
+}

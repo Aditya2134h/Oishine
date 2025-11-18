@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login - OISHINE Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Debug Login OISHINE Admin</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="email" value="admin@oishine.com" 
+                           class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="password" value="admin123" 
+                           class="w-full p-2 border rounded" required>
+                </div>
+                <button type="submit" 
+                        class="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600">
+                    Login
+                </button>
+            </form>
+            
+            <div id="result" class="mt-4 p-4 rounded hidden"></div>
+            
+            <div class="mt-6 text-sm">
+                <h3 class="font-bold mb-2">Debug Info:</h3>
+                <div id="debugInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const result = document.getElementById('result');
+        const debugInfo = document.getElementById('debugInfo');
+        
+        // Show debug info
+        debugInfo.innerHTML = `
+            <p><strong>URL:</strong> ${window.location.origin}</p>
+            <p><strong>API Endpoint:</strong> ${window.location.origin}/api/admin/auth/login</p>
+            <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+            <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+        `;
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            result.classList.remove('hidden');
+            result.innerHTML = '<p class="text-blue-600">🔄 Logging in...</p>';
+            
+            try {
+                const response = await fetch('/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="text-green-600">
+                            <p>✅ Login successful!</p>
+                            <p><strong>User:</strong> ${data.admin.name}</p>
+                            <p><strong>Email:</strong> ${data.admin.email}</p>
+                            <p><strong>Role:</strong> ${data.admin.role}</p>
+                            <button onclick="window.location.href='/admin/dashboard'" 
+                                    class="mt-2 bg-green-500 text-white px-4 py-2 rounded">
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="text-red-600">
+                            <p>❌ Login failed!</p>
+                            <p><strong>Error:</strong> ${data.error}</p>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="text-red-600">
+                        <p>❌ Network error!</p>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

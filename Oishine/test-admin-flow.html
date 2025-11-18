@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Admin Flow OISHINE!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-red-600 mb-8">🧪 Test Admin Flow OISHINE!</h1>
+        
+        <!-- Step 1: Login -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">🔐 Step 1: Login Admin</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <input type="email" id="email" value="admin@oishine.com" placeholder="Email" 
+                       class="px-3 py-2 border rounded-lg">
+                <input type="password" id="password" value="admin123" placeholder="Password" 
+                       class="px-3 py-2 border rounded-lg">
+            </div>
+            <button onclick="login()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                Login
+            </button>
+            <div id="loginResult" class="mt-4 text-sm"></div>
+        </div>
+
+        <!-- Step 2: Test Auth Me -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">👤 Step 2: Test Auth Status</h2>
+            <button onclick="testAuthMe()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Check Auth Status
+            </button>
+            <div id="authResult" class="mt-4 text-sm"></div>
+        </div>
+
+        <!-- Step 3: Test Products Access -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">📦 Step 3: Test Products Access</h2>
+            <button onclick="testProductsAccess()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                Access Admin Products
+            </button>
+            <div id="productsResult" class="mt-4 text-sm"></div>
+        </div>
+
+        <!-- Step 4: Simulate Navigation -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">🔗 Step 4: Simulate Navigation</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="simulateNavigation('/admin/dashboard')" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                    Go to Dashboard
+                </button>
+                <button onclick="simulateNavigation('/admin/products')" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+                    Go to Products
+                </button>
+                <button onclick="simulateNavigation('/admin/products/create')" class="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700">
+                    Create Product
+                </button>
+                <button onclick="simulateNavigation('/admin/logout')" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                    Logout
+                </button>
+            </div>
+            <div id="navigationResult" class="mt-4 text-sm"></div>
+        </div>
+
+        <!-- Debug Info -->
+        <div class="bg-yellow-50 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">🐛 Debug Information</h2>
+            <div id="debugInfo" class="text-sm font-mono"></div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="bg-blue-50 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">🔗 Quick Links</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="http://127.0.0.1:3000/admin/login" target="_blank" class="text-blue-600 hover:underline">🔐 Admin Login</a>
+                <a href="http://127.0.0.1:3000/admin/dashboard" target="_blank" class="text-blue-600 hover:underline">📊 Dashboard</a>
+                <a href="http://127.0.0.1:3000/admin/products" target="_blank" class="text-blue-600 hover:underline">📦 Admin Products</a>
+                <a href="http://127.0.0.1:3000" target="_blank" class="text-blue-600 hover:underline">🏠 Homepage</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = `
+                <div><strong>Token:</strong> ${authToken ? authToken.substring(0, 30) + '...' : 'None'}</div>
+                <div><strong>LocalStorage:</strong> ${localStorage.getItem('admin-token') ? 'Set' : 'Empty'}</div>
+                <div><strong>Timestamp:</strong> ${new Date().toLocaleTimeString('id-ID')}</div>
+                <div><strong>Browser:</strong> ${navigator.userAgent.split(' ').slice(-2).join(' ')}</div>
+            `;
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            resultDiv.innerHTML = '🔄 Logging in...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    authToken = data.token;
+                    localStorage.setItem('admin-token', authToken);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Login successful!</div>
+                        <div class="text-xs mt-1">User: ${data.user.name}</div>
+                        <div class="text-xs mt-1">Role: ${data.user.role}</div>
+                        <div class="text-xs mt-1">Token: ${authToken.substring(0, 30)}...</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Login failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+
+            updateDebugInfo();
+        }
+
+        async function testAuthMe() {
+            const resultDiv = document.getElementById('authResult');
+            resultDiv.innerHTML = '🔄 Checking auth status...';
+
+            if (!authToken) {
+                authToken = localStorage.getItem('admin-token') || '';
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/auth/me', {
+                    headers: authToken ? {
+                        'Authorization': `Bearer ${authToken}`
+                    } : {}
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Authenticated!</div>
+                        <div class="text-xs mt-1">ID: ${data.user.id}</div>
+                        <div class="text-xs mt-1">Name: ${data.user.name}</div>
+                        <div class="text-xs mt-1">Email: ${data.user.email}</div>
+                        <div class="text-xs mt-1">Role: ${data.user.role}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Not authenticated: ${data.error}</div>`;
+                    // Clear invalid token
+                    authToken = '';
+                    localStorage.removeItem('admin-token');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+
+            updateDebugInfo();
+        }
+
+        async function testProductsAccess() {
+            const resultDiv = document.getElementById('productsResult');
+            resultDiv.innerHTML = '🔄 Testing products access...';
+
+            if (!authToken) {
+                authToken = localStorage.getItem('admin-token') || '';
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/products', {
+                    headers: authToken ? {
+                        'Authorization': `Bearer ${authToken}`
+                    } : {}
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Products access granted!</div>
+                        <div class="text-xs mt-1">Products: ${data.data.length}</div>
+                        <div class="text-xs mt-1">Page: ${data.pagination.page}</div>
+                        <div class="text-xs mt-1">Total: ${data.pagination.total}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Access denied: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+
+            updateDebugInfo();
+        }
+
+        async function simulateNavigation(path) {
+            const resultDiv = document.getElementById('navigationResult');
+            resultDiv.innerHTML = `🔄 Navigating to ${path}...`;
+
+            if (!authToken) {
+                authToken = localStorage.getItem('admin-token') || '';
+            }
+
+            try {
+                // Simulate what happens when navigating to admin pages
+                if (path === '/admin/logout') {
+                    authToken = '';
+                    localStorage.removeItem('admin-token');
+                    resultDiv.innerHTML = `<div class="text-green-600">✅ Logged out successfully!</div>`;
+                } else {
+                    // Test auth first (this is what admin pages do)
+                    const authResponse = await fetch('http://127.0.0.1:3000/api/admin/auth/me', {
+                        headers: authToken ? {
+                            'Authorization': `Bearer ${authToken}`
+                        } : {}
+                    });
+
+                    if (authResponse.ok) {
+                        resultDiv.innerHTML = `
+                            <div class="text-green-600">✅ Can access ${path}</div>
+                            <div class="text-xs mt-1">Status: Authenticated</div>
+                            <div class="text-xs mt-1">You can open this page in new tab</div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="text-red-600">❌ Cannot access ${path}</div>
+                            <div class="text-xs mt-1">Status: Not authenticated</div>
+                            <div class="text-xs mt-1">Would redirect to login</div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+
+            updateDebugInfo();
+        }
+
+        // Auto-update debug info
+        setInterval(updateDebugInfo, 1000);
+
+        // Initialize
+        window.addEventListener('load', () => {
+            authToken = localStorage.getItem('admin-token') || '';
+            updateDebugInfo();
+        });
+    </script>
+</body>
+</html>
