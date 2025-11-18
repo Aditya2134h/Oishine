@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -50,14 +51,35 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/use-toast'
-import WhatsAppButton from '@/components/WhatsAppButton'
-import LoyaltyWidget from '@/components/LoyaltyWidget'
-import ReviewList from '@/components/ReviewList'
-import ReviewForm from '@/components/ReviewForm'
 import ThemeToggle from '@/components/ThemeToggle'
 import { ProductGridSkeleton } from '@/components/ui/skeleton'
-import ScrollToTop from '@/components/ScrollToTop'
 import { FadeIn, ScaleIn, FloatingElement } from '@/components/animations/ScrollAnimations'
+
+// Lazy load non-critical components
+const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), {
+  ssr: false,
+  loading: () => null
+})
+
+const LoyaltyWidget = dynamic(() => import('@/components/LoyaltyWidget'), {
+  ssr: false,
+  loading: () => null
+})
+
+const ReviewList = dynamic(() => import('@/components/ReviewList'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse h-64 bg-gray-200 rounded-lg" />
+})
+
+const ReviewForm = dynamic(() => import('@/components/ReviewForm'), {
+  ssr: false,
+  loading: () => <div className="animate-pulse h-48 bg-gray-200 rounded-lg" />
+})
+
+const ScrollToTop = dynamic(() => import('@/components/ScrollToTop'), {
+  ssr: false,
+  loading: () => null
+})
 
 interface Product {
   id: string
