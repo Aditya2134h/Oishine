@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import ScrollProgress from "@/components/ui/scroll-progress";
 import { ThemeProvider } from "@/components/theme-provider";
+import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 import { generateMetadata, generateRestaurantStructuredData, generateLocalBusinessStructuredData } from "@/lib/seo";
 
 const geistSans = Geist({
@@ -61,6 +62,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <WebVitalsReporter />
           <ScrollProgress />
           {children}
           <Toaster />
