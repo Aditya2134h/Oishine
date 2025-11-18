@@ -1,14 +1,62 @@
+# Robots.txt for OISHINE!
+# https://oishine.com/robots.txt
+
+User-agent: *
+Allow: /
+Allow: /api/products
+Allow: /api/categories
+Disallow: /api/admin/
+Disallow: /api/setup/
+Disallow: /admin/
+Disallow: /setup-admin/
+
+# Crawl-delay for all bots
+Crawl-delay: 1
+
+# Allow important crawlers with no restrictions
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 0
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 0
 
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# Social media bots
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Disallow AI crawlers (optional - uncomment if needed)
+# User-agent: GPTBot
+# Disallow: /
+# User-agent: ChatGPT-User
+# Disallow: /
+# User-agent: CCBot
+# Disallow: /
+# User-agent: anthropic-ai
+# Disallow: /
+
+# Sitemap location
+Sitemap: https://oishine.com/sitemap.xml
+
