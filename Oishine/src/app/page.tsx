@@ -53,6 +53,7 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import LoyaltyWidget from '@/components/LoyaltyWidget'
 import ReviewList from '@/components/ReviewList'
 import ReviewForm from '@/components/ReviewForm'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface Product {
   id: string
@@ -1004,6 +1005,9 @@ export default function Home() {
             </nav>
 
             <div className="flex items-center space-x-2 lg:space-x-3">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+
               {/* Order History Button */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
