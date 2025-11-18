@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Akses Lokal OISHINE!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4 max-w-2xl">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-bold text-red-600 mb-6">🔍 Test Akses Lokal OISHINE!</h1>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h2 class="font-semibold text-blue-800 mb-2">Informasi Server:</h2>
+                    <div id="serverInfo" class="text-sm text-blue-700"></div>
+                </div>
+
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h2 class="font-semibold text-green-800 mb-2">Test Koneksi API:</h2>
+                    <button onclick="testAPI()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+                        Test API Login
+                    </button>
+                    <div id="apiResult" class="mt-2 text-sm text-green-700"></div>
+                </div>
+
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h2 class="font-semibold text-yellow-800 mb-2">Test Login Admin:</h2>
+                    <div class="space-y-2">
+                        <input type="email" id="testEmail" value="admin@oishine.com" placeholder="Email" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <input type="password" id="testPassword" value="admin123" placeholder="Password" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <button onclick="testLogin()" class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                            Test Login
+                        </button>
+                    </div>
+                    <div id="loginResult" class="mt-2 text-sm text-yellow-700"></div>
+                </div>
+
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <h2 class="font-semibold text-purple-800 mb-2">Link Akses:</h2>
+                    <div class="space-y-2 text-sm">
+                        <div>
+                            <a href="http://localhost:3000" target="_blank" class="text-blue-600 hover:underline">
+                                🏠 Homepage (localhost:3000)
+                            </a>
+                        </div>
+                        <div>
+                            <a href="http://127.0.0.1:3000" target="_blank" class="text-blue-600 hover:underline">
+                                🏠 Homepage (127.0.0.1:3000)
+                            </a>
+                        </div>
+                        <div>
+                            <a href="http://localhost:3000/admin/login" target="_blank" class="text-blue-600 hover:underline">
+                                🔐 Admin Login (localhost:3000)
+                            </a>
+                        </div>
+                        <div>
+                            <a href="http://127.0.0.1:3000/admin/login" target="_blank" class="text-blue-600 hover:underline">
+                                🔐 Admin Login (127.0.0.1:3000)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <h2 class="font-semibold text-red-800 mb-2">Debug Info:</h2>
+                    <div id="debugInfo" class="text-xs text-red-700 font-mono"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tampilkan informasi server
+        document.getElementById('serverInfo').innerHTML = `
+            <div><strong>Current URL:</strong> ${window.location.href}</div>
+            <div><strong>Host:</strong> ${window.location.host}</div>
+            <div><strong>Protocol:</strong> ${window.location.protocol}</div>
+            <div><strong>Timestamp:</strong> ${new Date().toLocaleString('id-ID')}</div>
+        `;
+
+        // Test API koneksi
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '🔄 Testing API...';
+            
+            try {
+                // Test dengan localhost
+                const response = await fetch('http://localhost:3000/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@oishine.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `✅ API localhost berjalan!<br>Status: ${response.status}<br>Token: ${data.token ? 'Received' : 'Not received'}`;
+                } else {
+                    resultDiv.innerHTML = `❌ API localhost error: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                // Test dengan 127.0.0.1 jika localhost gagal
+                try {
+                    const response = await fetch('http://127.0.0.1:3000/api/admin/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: 'admin@oishine.com',
+                            password: 'admin123'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        resultDiv.innerHTML = `✅ API 127.0.0.1 berjalan!<br>Status: ${response.status}<br>Token: ${data.token ? 'Received' : 'Not received'}`;
+                    } else {
+                        resultDiv.innerHTML = `❌ API 127.0.0.1 error: ${response.status} ${response.statusText}`;
+                    }
+                } catch (error2) {
+                    resultDiv.innerHTML = `❌ Semua API error:<br>localhost: ${error.message}<br>127.0.0.1: ${error2.message}`;
+                }
+            }
+        }
+
+        // Test login lengkap
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            resultDiv.innerHTML = '🔄 Mencoba login...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Simpan token
+                    localStorage.setItem('admin-token', data.token);
+                    
+                    resultDiv.innerHTML = `✅ Login berhasil!<br>
+                        User: ${data.user.name}<br>
+                        Email: ${data.user.email}<br>
+                        Token: ${data.token.substring(0, 20)}...<br>
+                        <button onclick="window.open('http://localhost:3000/admin/dashboard', '_blank')" 
+                                class="mt-2 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                            Buka Dashboard
+                        </button>`;
+                } else {
+                    resultDiv.innerHTML = `❌ Login gagal:<br>${data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Debug info
+        document.getElementById('debugInfo').innerHTML = `
+            User Agent: ${navigator.userAgent}<br>
+            Cookies: ${document.cookie ? 'Enabled' : 'Disabled'}<br>
+            LocalStorage: ${typeof(Storage) !== "undefined" ? 'Available' : 'Not Available'}<br>
+            Online: ${navigator.onLine ? 'Yes' : 'No'}
+        `;
+
+        // Auto test API saat halaman dimuat
+        setTimeout(testAPI, 1000);
+    </script>
+</body>
+</html>

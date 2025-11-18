@@ -212,11 +212,37 @@ export async function POST(request: NextRequest) {
     if (userId) {
       const user = await db.user.findUnique({ where: { id: userId } })
       if (user) {
+        // Calculate loyalty points (1 point per 1000 IDR spent)
+        const basePoints = Math.floor(parseInt(total) / 1000)
+        
+        // Apply tier multiplier
+        const tierMultipliers: any = {
+          'BRONZE': 1,
+          'SILVER': 1.2,
+          'GOLD': 1.5,
+          'PLATINUM': 2
+        }
+        const multiplier = tierMultipliers[user.membershipTier] || 1
+        const pointsEarned = Math.floor(basePoints * multiplier)
+
+        // Update user stats and points
         await db.user.update({
           where: { id: userId },
           data: {
             totalOrders: { increment: 1 },
-            totalSpent: { increment: parseInt(total) }
+            totalSpent: { increment: parseInt(total) },
+            loyaltyPoints: { increment: pointsEarned }
+          }
+        })
+
+        // Create points history record
+        await db.loyaltyPointHistory.create({
+          data: {
+            userId,
+            points: pointsEarned,
+            type: 'EARNED_PURCHASE',
+            description: `Earned ${pointsEarned} points from order #${order.id.slice(-8)}`,
+            orderId: order.id
           }
         })
       }

@@ -42,12 +42,15 @@ import {
   Navigation,
   Timer,
   Store,
-  ChevronDown
+  ChevronDown,
+  Heart
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/use-toast'
+import WhatsAppButton from '@/components/WhatsAppButton'
+import LoyaltyWidget from '@/components/LoyaltyWidget'
 
 interface Product {
   id: string
@@ -132,6 +135,8 @@ export default function Home() {
     comment: '',
     images: []
   })
+  const [wishlist, setWishlist] = useState<string[]>([]) // Array of product IDs
+  const [sessionId, setSessionId] = useState<string>('')
   const [storeSettings, setStoreSettings] = useState({
     storeName: 'Oishine!',
     storeEmail: 'admin@oishine.com',
@@ -226,6 +231,85 @@ export default function Home() {
       console.error('Error submitting review:', error)
       toast.error('Gagal Menambah Review', error.message || 'Terjadi kesalahan saat menambahkan review')
     }
+  }
+
+  // Wishlist functions
+  const getOrCreateSessionId = () => {
+    if (sessionId) return sessionId
+    
+    let sid = localStorage.getItem('sessionId')
+    if (!sid) {
+      sid = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      localStorage.setItem('sessionId', sid)
+    }
+    setSessionId(sid)
+    return sid
+  }
+
+  const loadWishlist = async () => {
+    try {
+      const sid = getOrCreateSessionId()
+      const response = await fetch(`/api/wishlist?sessionId=${sid}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          const wishlistIds = data.data.map((item: any) => item.productId)
+          setWishlist(wishlistIds)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading wishlist:', error)
+    }
+  }
+
+  const toggleWishlist = async (productId: string) => {
+    const sid = getOrCreateSessionId()
+    const isInWishlist = wishlist.includes(productId)
+
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist
+        const response = await fetch(`/api/wishlist?sessionId=${sid}&productId=${productId}`, {
+          method: 'DELETE'
+        })
+        
+        if (response.ok) {
+          setWishlist(wishlist.filter(id => id !== productId))
+          toast({
+            title: 'Dihapus dari Favorit',
+            description: 'Produk berhasil dihapus dari daftar favorit'
+          })
+        }
+      } else {
+        // Add to wishlist
+        const response = await fetch('/api/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ sessionId: sid, productId })
+        })
+        
+        if (response.ok) {
+          setWishlist([...wishlist, productId])
+          toast({
+            title: 'Ditambahkan ke Favorit',
+            description: 'Produk berhasil ditambahkan ke daftar favorit'
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Terjadi Kesalahan',
+        description: 'Gagal mengubah daftar favorit'
+      })
+    }
+  }
+
+  const isInWishlist = (productId: string) => {
+    return wishlist.includes(productId)
   }
 
   // Load order history
@@ -428,6 +512,9 @@ export default function Home() {
 
         // Load team members
         await loadTeamMembers();
+        
+        // Load wishlist
+        await loadWishlist();
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Error loading data:', error);
@@ -1376,6 +1463,28 @@ export default function Home() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       
+                      {/* Wishlist Heart Button - Always Visible */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.1 + index * 0.1, type: "spring" }}
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.8 }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleWishlist(product.id)
+                        }}
+                        className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg cursor-pointer z-10 hover:bg-white transition-all"
+                      >
+                        <Heart 
+                          className={`h-5 w-5 transition-all duration-300 ${
+                            isInWishlist(product.id) 
+                              ? 'text-red-500 fill-red-500 animate-pulse' 
+                              : 'text-gray-400 hover:text-red-400'
+                          }`} 
+                        />
+                      </motion.div>
+                      
                       {/* Product Badge */}
                       {product.isAvailable && (
                         <motion.div
@@ -1402,6 +1511,23 @@ export default function Home() {
                           className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg"
                         >
                           <Star className="h-4 w-4 text-yellow-500" />
+                        </motion.div>
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleWishlist(product.id)
+                          }}
+                          className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg cursor-pointer"
+                        >
+                          <Heart 
+                            className={`h-4 w-4 transition-colors ${
+                              isInWishlist(product.id) 
+                                ? 'text-red-500 fill-red-500' 
+                                : 'text-gray-400'
+                            }`} 
+                          />
                         </motion.div>
                         <motion.div
                           whileHover={{ scale: 1.1 }}
@@ -3016,6 +3142,15 @@ export default function Home() {
           </Dialog>
         )}
       </AnimatePresence>
+
+      {/* WhatsApp Floating Button */}
+      <WhatsAppButton 
+        phoneNumber={storeSettings.contactPhone?.replace(/[^0-9]/g, '') || '6281234567890'}
+        message={`Halo ${storeSettings.storeName}! Saya ingin bertanya tentang menu...`}
+      />
+
+      {/* Loyalty Widget */}
+      <LoyaltyWidget sessionId={sessionId} />
     </div>
   )
 }

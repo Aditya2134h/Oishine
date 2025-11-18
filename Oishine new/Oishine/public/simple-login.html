@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Login Test - OISHINE</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #dc2626; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #b91c1c; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .info { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+        pre { background: #f3f4f6; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Simple Login Test - OISHINE Admin</h1>
+    
+    <div class="info">
+        <strong>Debug Info:</strong><br>
+        URL: <span id="currentUrl"></span><br>
+        API Endpoint: <span id="apiEndpoint"></span><br>
+        Time: <span id="currentTime"></span>
+    </div>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" value="admin@oishine.com" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="admin123" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Update debug info
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('apiEndpoint').textContent = window.location.origin + '/api/admin/auth/login';
+        document.getElementById('currentTime').textContent = new Date().toLocaleString();
+        
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            const apiEndpoint = window.location.origin + '/api/admin/auth/login';
+            
+            resultDiv.innerHTML = '<div class="info">🔄 Logging in...</div>';
+            
+            try {
+                console.log('Attempting login to:', apiEndpoint);
+                console.log('Payload:', { email, password });
+                
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    throw new Error(`Invalid JSON response. Raw response: ${responseText.substring(0, 200)}...`);
+                }
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Login Successful!</h3>
+                            <p><strong>User:</strong> ${data.admin.name}</p>
+                            <p><strong>Email:</strong> ${data.admin.email}</p>
+                            <p><strong>Role:</strong> ${data.admin.role}</p>
+                            <p><strong>Token Set:</strong> ${document.cookie.includes('admin-token') ? 'Yes' : 'No'}</p>
+                            <p><strong>Response:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <button onclick="window.location.href='/admin/dashboard'" style="margin-top: 10px;">
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Login Failed!</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Content-Type:</strong> ${contentType}</p>
+                            <p><strong>Error:</strong> ${data.error || 'Unknown error'}</p>
+                            <p><strong>Full Response:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error!</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Stack:</strong></p>
+                        <pre>${error.stack}</pre>
+                        <p><strong>Troubleshooting:</strong></p>
+                        <ul>
+                            <li>Check if server is running on ${window.location.origin}</li>
+                            <li>Check browser console for CORS errors</li>
+                            <li>Try clearing browser cache</li>
+                            <li>Try incognito window</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        });
+        
+        // Auto-test on page load
+        setTimeout(function() {
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }, 1000);
+    </script>
+</body>
+</html>

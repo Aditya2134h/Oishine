@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CRUD Produk OISHINE!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-red-600 mb-8">🧪 Test CRUD Produk OISHINE!</h1>
+        
+        <!-- Login Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">🔐 Login Admin</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <input type="email" id="email" value="admin@oishine.com" placeholder="Email" 
+                       class="px-3 py-2 border rounded-lg">
+                <input type="password" id="password" value="admin123" placeholder="Password" 
+                       class="px-3 py-2 border rounded-lg">
+            </div>
+            <button onclick="login()" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                Login
+            </button>
+            <div id="loginResult" class="mt-4 text-sm"></div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Public Products -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">🌐 Public Products API</h2>
+                <button onclick="testPublicProducts()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Test Public Products
+                </button>
+                <div id="publicResult" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Admin Products -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">🔒 Admin Products API</h2>
+                <button onclick="testAdminProducts()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    Test Admin Products
+                </button>
+                <div id="adminResult" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Categories -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">📂 Categories API</h2>
+                <button onclick="testCategories()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                    Test Categories
+                </button>
+                <div id="categoriesResult" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Create Product -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">➕ Create Product</h2>
+                <button onclick="testCreateProduct()" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+                    Test Create Product
+                </button>
+                <div id="createResult" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Product List -->
+        <div class="bg-white rounded-lg shadow p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">📦 Product List</h2>
+            <div id="productList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="bg-blue-50 rounded-lg p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">🔗 Quick Links</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="http://127.0.0.1:3000" target="_blank" class="text-blue-600 hover:underline">🏠 Homepage</a>
+                <a href="http://127.0.0.1:3000/admin/login" target="_blank" class="text-blue-600 hover:underline">🔐 Admin Login</a>
+                <a href="http://127.0.0.1:3000/admin/products" target="_blank" class="text-blue-600 hover:underline">📦 Admin Products</a>
+                <a href="http://127.0.0.1:3000/admin/products/create" target="_blank" class="text-blue-600 hover:underline">➕ Create Product</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    authToken = data.token;
+                    localStorage.setItem('admin-token', authToken);
+                    resultDiv.innerHTML = `<div class="text-green-600">✅ Login successful! Token: ${authToken.substring(0, 30)}...</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Login failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testPublicProducts() {
+            const resultDiv = document.getElementById('publicResult');
+            resultDiv.innerHTML = '🔄 Testing...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/products');
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Success!</div>
+                        <div>Products: ${data.data.length}</div>
+                        <div>Pages: ${data.pagination.pages}</div>
+                    `;
+                    displayProducts(data.data);
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testAdminProducts() {
+            const resultDiv = document.getElementById('adminResult');
+            resultDiv.innerHTML = '🔄 Testing...';
+
+            if (!authToken) {
+                resultDiv.innerHTML = `<div class="text-yellow-600">⚠️ Please login first</div>`;
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/products', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Success!</div>
+                        <div>Products: ${data.data.length}</div>
+                        <div>Pages: ${data.pagination.pages}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testCategories() {
+            const resultDiv = document.getElementById('categoriesResult');
+            resultDiv.innerHTML = '🔄 Testing...';
+
+            if (!authToken) {
+                resultDiv.innerHTML = `<div class="text-yellow-600">⚠️ Please login first</div>`;
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/categories', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Success!</div>
+                        <div>Categories: ${data.data.length}</div>
+                        <div class="mt-2">
+                            ${data.data.map(cat => `<div class="text-xs">• ${cat.name} (${cat._count.products} products)</div>`).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testCreateProduct() {
+            const resultDiv = document.getElementById('createResult');
+            resultDiv.innerHTML = '🔄 Testing...';
+
+            if (!authToken) {
+                resultDiv.innerHTML = `<div class="text-yellow-600">⚠️ Please login first</div>`;
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:3000/api/admin/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        name: `Test Product ${Date.now()}`,
+                        description: 'This is a test product created via API',
+                        price: 9999,
+                        categoryId: 'cmg9cstx60005sz1sb0eschkj', // Dessert category
+                        isAvailable: true
+                    })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600">✅ Product created!</div>
+                        <div>ID: ${data.data.id}</div>
+                        <div>Name: ${data.data.name}</div>
+                        <div>Price: Rp ${data.data.price.toLocaleString('id-ID')}</div>
+                    `;
+                    // Refresh product list
+                    testPublicProducts();
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-600">❌ Failed: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayProducts(products) {
+            const listDiv = document.getElementById('productList');
+            const displayProducts = products.slice(0, 6); // Show first 6 products
+            
+            listDiv.innerHTML = displayProducts.map(product => `
+                <div class="border rounded-lg p-4">
+                    <div class="font-semibold">${product.name}</div>
+                    <div class="text-sm text-gray-600">${product.description}</div>
+                    <div class="text-sm font-medium text-red-600">Rp ${product.price.toLocaleString('id-ID')}</div>
+                    <div class="text-xs bg-gray-100 rounded px-2 py-1 mt-2 inline-block">
+                        ${product.category.name}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Auto-login on page load
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('admin-token');
+            if (savedToken) {
+                authToken = savedToken;
+                document.getElementById('loginResult').innerHTML = '<div class="text-green-600">✅ Using saved token</div>';
+            }
+            
+            // Auto-test public products
+            testPublicProducts();
+        });
+    </script>
+</body>
+</html>

@@ -24,11 +24,16 @@ model User {
   totalSpent  Int     @default(0)
   averageRating Float? // As reviewer
   reviewCount  Int     @default(0)
+  // Loyalty Program
+  loyaltyPoints Int    @default(0)
+  membershipTier String @default("BRONZE") // BRONZE, SILVER, GOLD, PLATINUM
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Order[]
   cartItems CartItem[]
   reviews   Review[]
+  wishlist  Wishlist[]
+  pointsHistory LoyaltyPointHistory[]
 }
 
 model Admin {
@@ -78,6 +83,7 @@ model Product {
   cartItems   CartItem[]
   orderItems  OrderItem[]
   reviews     Review[]
+  wishlistedBy Wishlist[]
 }
 
 model CartItem {
@@ -261,6 +267,41 @@ model Review {
   helpful     Int        @default(0) // Helpful votes
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+// Wishlist System
+model Wishlist {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, productId])
+}
+
+// Loyalty Program
+model LoyaltyPointHistory {
+  id          String   @id @default(cuid())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?
+  points      Int      // Can be positive (earned) or negative (redeemed)
+  type        PointTransactionType
+  description String
+  orderId     String?  // Reference to order if points earned from purchase
+  createdAt   DateTime @default(now())
+}
+
+enum PointTransactionType {
+  EARNED_PURCHASE      // Points from making purchase
+  EARNED_REVIEW        // Points from writing review
+  EARNED_REFERRAL      // Points from referring friend
+  EARNED_BONUS         // Bonus points from promotion
+  REDEEMED_DISCOUNT    // Points used for discount
+  REDEEMED_REWARD      // Points used for reward
+  EXPIRED              // Points expired
+  ADJUSTED             // Manual adjustment by admin
 }
 
 // Driver Management
