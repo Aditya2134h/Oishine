@@ -55,6 +55,8 @@ import ReviewList from '@/components/ReviewList'
 import ReviewForm from '@/components/ReviewForm'
 import ThemeToggle from '@/components/ThemeToggle'
 import { ProductGridSkeleton } from '@/components/ui/skeleton'
+import ScrollToTop from '@/components/ScrollToTop'
+import { FadeIn, ScaleIn, FloatingElement } from '@/components/animations/ScrollAnimations'
 
 interface Product {
   id: string
@@ -3210,6 +3212,9 @@ export default function Home() {
 
       {/* Loyalty Widget */}
       <LoyaltyWidget sessionId={sessionId} />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </div>
   )
 }
