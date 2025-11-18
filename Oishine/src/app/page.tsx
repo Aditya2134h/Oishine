@@ -54,6 +54,7 @@ import LoyaltyWidget from '@/components/LoyaltyWidget'
 import ReviewList from '@/components/ReviewList'
 import ReviewForm from '@/components/ReviewForm'
 import ThemeToggle from '@/components/ThemeToggle'
+import { ProductGridSkeleton } from '@/components/ui/skeleton'
 
 interface Product {
   id: string
