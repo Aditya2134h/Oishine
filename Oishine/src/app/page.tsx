@@ -51,6 +51,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/use-toast'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import LoyaltyWidget from '@/components/LoyaltyWidget'
+import ReviewList from '@/components/ReviewList'
+import ReviewForm from '@/components/ReviewForm'
 
 interface Product {
   id: string
@@ -2359,75 +2361,96 @@ export default function Home() {
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="aspect-video relative rounded-xl overflow-hidden">
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
-                  />
-                  {selectedProduct.isAvailable && (
-                    <Badge className="absolute top-4 right-4 bg-green-600 hover:bg-green-700">
-                      Tersedia
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold text-xl mb-3 text-gray-900">Deskripsi</h3>
-                    <p className="text-gray-600 leading-relaxed">{selectedProduct.description}</p>
+              <div className="space-y-8">
+                {/* Product Info Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="aspect-video relative rounded-xl overflow-hidden">
+                    <img
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {selectedProduct.isAvailable && (
+                      <Badge className="absolute top-4 right-4 bg-green-600 hover:bg-green-700">
+                        Tersedia
+                      </Badge>
+                    )}
                   </div>
                   
-                  <div>
-                    <h3 className="font-semibold text-xl mb-3 text-gray-900">Bahan-bahan</h3>
-                    <p className="text-gray-600 leading-relaxed">{selectedProduct.ingredients}</p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold text-xl mb-3 text-gray-900">Harga</h3>
-                    <p className="text-3xl font-bold text-red-600">
-                      Rp {(selectedProduct.price || 0).toLocaleString('id-ID')}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold text-xl mb-3 text-gray-900">Jumlah</h3>
-                    <div className="flex items-center space-x-4">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setDetailQuantity(Math.max(1, detailQuantity - 1))}
-                        className="hover:bg-red-50 hover:border-red-300"
-                      >
-                        <Minus className="h-5 w-5" />
-                      </Button>
-                      <span className="w-16 text-center font-bold text-xl">{detailQuantity}</span>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setDetailQuantity(detailQuantity + 1)}
-                        className="hover:bg-red-50 hover:border-red-300"
-                      >
-                        <Plus className="h-5 w-5" />
-                      </Button>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="font-semibold text-xl mb-3 text-gray-900">Deskripsi</h3>
+                      <p className="text-gray-600 leading-relaxed">{selectedProduct.description}</p>
                     </div>
+                    
+                    <div>
+                      <h3 className="font-semibold text-xl mb-3 text-gray-900">Bahan-bahan</h3>
+                      <p className="text-gray-600 leading-relaxed">{selectedProduct.ingredients}</p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold text-xl mb-3 text-gray-900">Harga</h3>
+                      <p className="text-3xl font-bold text-red-600">
+                        Rp {(selectedProduct.price || 0).toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold text-xl mb-3 text-gray-900">Jumlah</h3>
+                      <div className="flex items-center space-x-4">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={() => setDetailQuantity(Math.max(1, detailQuantity - 1))}
+                          className="hover:bg-red-50 hover:border-red-300"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </Button>
+                        <span className="w-16 text-center font-bold text-xl">{detailQuantity}</span>
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={() => setDetailQuantity(detailQuantity + 1)}
+                          className="hover:bg-red-50 hover:border-red-300"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-semibold text-xl mb-3 text-gray-900">Total</h3>
+                      <p className="text-3xl font-bold text-red-600">
+                        Rp {((selectedProduct.price || 0) * detailQuantity).toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      onClick={addToCartFromDetail}
+                    >
+                      <ShoppingCart className="h-6 w-6 mr-3" />
+                      Tambah {detailQuantity} ke Keranjang
+                    </Button>
                   </div>
-                  
-                  <div>
-                    <h3 className="font-semibold text-xl mb-3 text-gray-900">Total</h3>
-                    <p className="text-3xl font-bold text-red-600">
-                      Rp {((selectedProduct.price || 0) * detailQuantity).toLocaleString('id-ID')}
-                    </p>
+                </div>
+
+                {/* Reviews Section */}
+                <div className="border-t pt-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900">Rating & Review</h3>
+                    {selectedProduct.averageRating && (
+                      <div className="flex items-center gap-2">
+                        <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <span className="text-lg font-semibold">{selectedProduct.averageRating.toFixed(1)}</span>
+                        <span className="text-gray-500">({selectedProduct.reviewCount} review)</span>
+                      </div>
+                    )}
                   </div>
-                  
-                  <Button 
-                    className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    onClick={addToCartFromDetail}
-                  >
-                    <ShoppingCart className="h-6 w-6 mr-3" />
-                    Tambah {detailQuantity} ke Keranjang
-                  </Button>
+
+                  <div className="space-y-6">
+                    <ReviewList productId={selectedProduct.id} limit={3} />
+                  </div>
                 </div>
               </div>
             </DialogContent>
