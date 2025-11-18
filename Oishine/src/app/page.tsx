@@ -235,26 +235,32 @@ export default function Home() {
 
   // Wishlist functions
   const getOrCreateSessionId = () => {
-    if (sessionId) return sessionId
+    if (sessionId && sessionId !== '') return sessionId
     
     let sid = localStorage.getItem('sessionId')
     if (!sid) {
       sid = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
       localStorage.setItem('sessionId', sid)
+      setSessionId(sid)
     }
-    setSessionId(sid)
     return sid
   }
 
   const loadWishlist = async () => {
     try {
       const sid = getOrCreateSessionId()
+      if (!sid) {
+        console.log('No session ID available yet')
+        return
+      }
+      
       const response = await fetch(`/api/wishlist?sessionId=${sid}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
           const wishlistIds = data.data.map((item: any) => item.productId)
           setWishlist(wishlistIds)
+          console.log('Wishlist loaded:', wishlistIds)
         }
       }
     } catch (error) {
@@ -264,6 +270,15 @@ export default function Home() {
 
   const toggleWishlist = async (productId: string) => {
     const sid = getOrCreateSessionId()
+    if (!sid) {
+      toast({
+        variant: 'destructive',
+        title: 'Terjadi Kesalahan',
+        description: 'Session tidak tersedia'
+      })
+      return
+    }
+    
     const isInWishlist = wishlist.includes(productId)
 
     try {
@@ -512,9 +527,6 @@ export default function Home() {
 
         // Load team members
         await loadTeamMembers();
-        
-        // Load wishlist
-        await loadWishlist();
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Error loading data:', error);
@@ -604,6 +616,25 @@ export default function Home() {
 
     loadData();
   }, [])
+
+  // Initialize session ID on mount
+  useEffect(() => {
+    const sid = localStorage.getItem('sessionId')
+    if (!sid) {
+      const newSid = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      localStorage.setItem('sessionId', newSid)
+      setSessionId(newSid)
+    } else {
+      setSessionId(sid)
+    }
+  }, [])
+
+  // Load wishlist when sessionId is available
+  useEffect(() => {
+    if (sessionId) {
+      loadWishlist()
+    }
+  }, [sessionId])
 
   // Debug: Log when storeSettings changes
   useEffect(() => {
