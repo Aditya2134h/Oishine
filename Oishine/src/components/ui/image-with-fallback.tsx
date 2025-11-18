@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
+import Image from 'next/image'
 import { User } from 'lucide-react'
 
 interface ImageWithFallbackProps {
@@ -10,6 +11,11 @@ interface ImageWithFallbackProps {
   fallbackClassName?: string
   iconSize?: number
   fallbackText?: string
+  fill?: boolean
+  width?: number
+  height?: number
+  sizes?: string
+  priority?: boolean
 }
 
 export default function ImageWithFallback({
@@ -18,19 +24,17 @@ export default function ImageWithFallback({
   className = '',
   fallbackClassName = '',
   iconSize = 24,
-  fallbackText
+  fallbackText,
+  fill = false,
+  width,
+  height,
+  sizes = '100vw',
+  priority = false
 }: ImageWithFallbackProps) {
   const [hasError, setHasError] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const imgRef = useRef<HTMLImageElement>(null)
 
   const handleError = () => {
     setHasError(true)
-    setIsLoading(false)
-  }
-
-  const handleLoad = () => {
-    setIsLoading(false)
   }
 
   // Generate a consistent background color based on the alt text
@@ -75,23 +79,21 @@ export default function ImageWithFallback({
     )
   }
 
+  const imageProps = fill
+    ? { fill: true, sizes }
+    : { width: width || 400, height: height || 400 }
+
   return (
-    <div className="relative">
-      {isLoading && (
-        <div className={`absolute inset-0 flex items-center justify-center bg-gray-100 ${className}`}>
-          <div className="animate-pulse">
-            <User size={iconSize} className="text-gray-300" />
-          </div>
-        </div>
-      )}
-      <img
-        ref={imgRef}
-        src={src}
-        alt={alt}
-        className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-        onError={handleError}
-        onLoad={handleLoad}
-      />
-    </div>
+    <Image
+      {...imageProps}
+      src={src}
+      alt={alt}
+      className={className}
+      onError={handleError}
+      priority={priority}
+      loading={priority ? undefined : 'lazy'}
+      placeholder="blur"
+      blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+    />
   )
 }

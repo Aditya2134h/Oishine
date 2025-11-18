@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import ImageWithFallback from '@/components/ui/image-with-fallback'
+import Image from 'next/image'
 import { 
   ShoppingCart, 
   Search, 
@@ -946,11 +947,16 @@ export default function Home() {
                 transition={{ duration: 0.6, ease: "easeInOut" }}
                 className="relative"
               >
-                <img 
-                  src="/oishine-logo-custom.png" 
-                  alt="OISHINE!" 
-                  className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 object-cover rounded-full shadow-lg group-hover:shadow-xl transition-shadow" 
-                />
+                <div className="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9">
+                  <Image 
+                    src="/oishine-logo-custom.png" 
+                    alt="OISHINE!"
+                    fill
+                    priority
+                    sizes="(max-width: 640px) 24px, (max-width: 768px) 28px, (max-width: 1024px) 32px, 36px"
+                    className="object-cover rounded-full shadow-lg group-hover:shadow-xl transition-shadow" 
+                  />
+                </div>
                 <motion.div
                   animate={{ scale: [1, 1.3, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -1177,7 +1183,7 @@ export default function Home() {
                     transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                     className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 mx-auto relative overflow-hidden rounded-full shadow-2xl"
                   >
-                    <img src="/oishine-logo-custom.png" alt="OISHINE!" className="w-full h-full object-cover rounded-full" />
+                    <Image src="/oishine-logo-custom.png" alt="OISHINE!" fill sizes="(max-width: 640px) 40px, (max-width: 768px) 48px, (max-width: 1024px) 56px, 64px" className="object-cover rounded-full" />
                     <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-pink-500 rounded-full blur-xl opacity-30 scale-110"></div>
                   </motion.div>
                   <motion.div
@@ -1496,10 +1502,12 @@ export default function Home() {
                   <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 interactive-cursor bg-white/80 backdrop-blur-sm rounded-3xl" onClick={() => openProductDetail(product)}>
                     {/* Product Image */}
                     <div className="aspect-video relative overflow-hidden">
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       
@@ -1705,11 +1713,13 @@ export default function Home() {
               viewport={{ once: true }}
             >
               <div className="relative max-w-sm mx-auto">
-                <div className="aspect-square bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl overflow-hidden shadow-xl">
-                  <img
+                <div className="aspect-square bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl overflow-hidden shadow-xl relative">
+                  <Image
                     src="/oishine-logo-optimized.png"
                     alt="OISHINE!"
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
                   />
                 </div>
                 <motion.div
@@ -1803,7 +1813,9 @@ export default function Home() {
                     <ImageWithFallback
                       src={member.image}
                       alt={member.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
                       fallbackClassName="w-full h-full flex items-center justify-center bg-gray-100"
                       fallbackText={member.name}
                     />
@@ -1994,9 +2006,9 @@ export default function Home() {
                 <motion.div 
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-full overflow-hidden shadow-lg"
+                  className="h-6 w-6 sm:h-8 sm:w-8 rounded-full overflow-hidden shadow-lg relative"
                 >
-                  <img src="/oishine-logo-custom.png" alt="OISHINE!" className="w-full h-full object-cover rounded-full" />
+                  <Image src="/oishine-logo-custom.png" alt="OISHINE!" fill sizes="32px" className="object-cover rounded-full" />
                 </motion.div>
                 <div>
                   <span className="font-bold text-xl">OISHINE!</span>
@@ -2178,11 +2190,13 @@ export default function Home() {
                         >
                           <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-50 to-white border-2 border-gray-100 rounded-2xl hover:shadow-lg hover:border-red-200 transition-all duration-300">
                             {/* Product Image */}
-                            <div className="relative">
-                              <img
+                            <div className="relative w-20 h-20">
+                              <Image
                                 src={item.product.image}
                                 alt={item.product.name}
-                                className="w-20 h-20 object-cover rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300"
+                                fill
+                                sizes="80px"
+                                className="object-cover rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300"
                               />
                               <motion.div
                                 animate={{ scale: [1, 1.1, 1] }}
@@ -2372,10 +2386,12 @@ export default function Home() {
                 {/* Product Info Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="aspect-video relative rounded-xl overflow-hidden">
-                    <img
+                    <Image
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover"
                     />
                     {selectedProduct.isAvailable && (
                       <Badge className="absolute top-4 right-4 bg-green-600 hover:bg-green-700">
